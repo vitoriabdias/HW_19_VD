@@ -7,8 +7,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">  
-    </head>
-    
+    </head> 
     <body>
         <img class="image-corner-left" src="images/Left Corner.svg"/>
         <img class="image-corner-right" src="images/Right Corner.svg"/>
@@ -17,7 +16,7 @@
           <nav>
             <ul>
               <li>
-                <a href="index.html">Work</a>
+                <a href="index.html" id="work_scroll">Work</a>
               </li>
               <li>
                 <a href="index.html">About</a>
@@ -26,7 +25,7 @@
                 <a href="index.html">Resumé</a>
               </li>
               <li>
-                <a href="index.html">Contact</a>
+                <a href="index.html" id="contact_scroll">Contact</a>
               </li>
             </ul>
           </nav>           
@@ -46,7 +45,7 @@
             </section>
           </section>
           <section class="case-study"> 
-              <p class="case-study__tittle">My Work</p>
+              <p class="case-study__tittle" id="work_after">My Work</p>
             <section class="case-study-1">
               <img class="case-study-1" src="images/NYPL PHONE 01@2x.png" width="197" height="394" class="responsive">
                 <p class="case-study__tittle__ny">Redesign <br>New York <br>Public Library</p>
@@ -99,7 +98,7 @@
                 </ul>
               </section>
               <footer>
-                <section class="contact">
+                <section class="contact" id="contact_after">
                 <a href="mailto:designvitoriadias@gmail.com">designvitoriadias@gmail.com</a>
                 <a href="tel:+16476753664">647.675.3664</a>
               </section>
@@ -117,4 +116,6 @@
               </footer>
         </main>
     </body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="js/index.js"></script>
 </html>   
