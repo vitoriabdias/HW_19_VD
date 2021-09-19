@@ -11,7 +11,7 @@ body, button {
 .image-corner-right {
     position: absolute;
     top: 0px;
-    right: -80px;
+    right: 0px;
     width: 33%;
 }
 .image-corner-left {
