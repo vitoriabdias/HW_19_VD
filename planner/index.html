@@ -1,0 +1,1277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important} body{margin:0} img{max-width:100%}</style>
+</head>
+<body>
+<title>Brain Blocks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: one calm column (max 980px). Home = a grid of five colour-coded blocks; each block opens its own view. Bottom tab bar for thumbs. */
+:root {
+  --bg: #F5F3FC;
+  --surface: #FFFFFF;
+  --surface-2: #FBFAFF;
+  --ink: #29233F;
+  --muted: #6B6585;
+  --line: #E5E1F2;
+  --shadow: 0 1px 2px rgba(60, 45, 120, .06), 0 6px 18px rgba(60, 45, 120, .07);
+
+  --tasks: #7B6CF0;   --tasks-soft: #ECE9FE;   --tasks-deep: #4A3BC0;
+  --grocery: #2BAE7A; --grocery-soft: #DCF4E9; --grocery-deep: #17704C;
+  --clean: #F0AE34;   --clean-soft: #FFF0D0;   --clean-deep: #8A5A00;
+  --money: #2D98C8;   --money-soft: #DBEFF8;   --money-deep: #145F82;
+  --care: #EE6799;    --care-soft: #FDE3ED;    --care-deep: #A3285A;
+
+  --ok: #2BAE7A; --ok-soft: #DCF4E9;
+  --warn: #E59A1A; --warn-soft: #FFF0D0;
+  --hot: #E5486E; --hot-soft: #FDE1E8;
+
+  --f-display: "Fredoka", "Nunito", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Lexend", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --r-lg: 24px; --r-md: 16px; --r-sm: 12px;
+  --tab-h: 72px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16132A; --surface: #211D37; --surface-2: #1C1930; --ink: #F1EEFB; --muted: #A9A3C6; --line: #352F52;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+    --tasks-soft: #2C2754; --tasks-deep: #BDB4FF;
+    --grocery-soft: #163A2D; --grocery-deep: #82E2B8;
+    --clean-soft: #3D3016; --clean-deep: #FFD47D;
+    --money-soft: #15344A; --money-deep: #93D5F3;
+    --care-soft: #43203A; --care-deep: #FFA3C6;
+    --ok-soft: #163A2D; --warn-soft: #3D3016; --hot-soft: #45202C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16132A; --surface: #211D37; --surface-2: #1C1930; --ink: #F1EEFB; --muted: #A9A3C6; --line: #352F52;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  --tasks-soft: #2C2754; --tasks-deep: #BDB4FF;
+  --grocery-soft: #163A2D; --grocery-deep: #82E2B8;
+  --clean-soft: #3D3016; --clean-deep: #FFD47D;
+  --money-soft: #15344A; --money-deep: #93D5F3;
+  --care-soft: #43203A; --care-deep: #FFA3C6;
+  --ok-soft: #163A2D; --warn-soft: #3D3016; --hot-soft: #45202C;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 calc(var(--tab-h) + 28px + env(safe-area-inset-bottom, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--tasks); outline-offset: 2px; border-radius: 10px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; line-height: 1.15; margin: 0; text-wrap: balance; letter-spacing: .005em; }
+
+.b-tasks   { --c: var(--tasks);   --c-soft: var(--tasks-soft);   --c-deep: var(--tasks-deep); }
+.b-grocery { --c: var(--grocery); --c-soft: var(--grocery-soft); --c-deep: var(--grocery-deep); }
+.b-clean   { --c: var(--clean);   --c-soft: var(--clean-soft);   --c-deep: var(--clean-deep); }
+.b-money   { --c: var(--money);   --c-soft: var(--money-soft);   --c-deep: var(--money-deep); }
+.b-care    { --c: var(--care);    --c-soft: var(--care-soft);    --c-deep: var(--care-deep); }
+
+.wrap { max-width: 980px; margin: 0 auto; }
+
+/* Header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 18px 6px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+.brand-mark { width: 38px; height: 38px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.brand-mark i { border-radius: 7px; display: block; }
+.brand-mark i:nth-child(1) { background: var(--tasks); border-radius: 10px 6px 6px 6px; }
+.brand-mark i:nth-child(2) { background: var(--grocery); border-radius: 50%; }
+.brand-mark i:nth-child(3) { background: var(--care); border-radius: 50%; }
+.brand-mark i:nth-child(4) { background: var(--clean); border-radius: 6px 6px 10px 6px; }
+.brand-name { font-family: var(--f-display); font-weight: 700; font-size: 1.35rem; letter-spacing: .01em; }
+.top-right { display: flex; align-items: center; gap: 8px; }
+.sync { font-size: .78rem; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; }
+.sync::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.sync[data-s="cloud"]::before { background: var(--ok); }
+.sync[data-s="saving"]::before { background: var(--warn); }
+.sync[data-s="error"]::before, .sync[data-s="unreachable"]::before { background: var(--hot); }
+.icon-btn { width: 40px; height: 40px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; font-size: 1.1rem; }
+
+/* Views */
+.view { display: flex; flex-direction: column; gap: 18px; padding-block: 10px 0; }
+.view-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.view-head h1 { font-size: clamp(1.7rem, 5vw, 2.3rem); }
+.view-head p { margin: 4px 0 0; color: var(--muted); }
+.kicker { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 500; text-transform: uppercase; letter-spacing: .08em; color: var(--c-deep, var(--muted)); }
+
+/* Example banner */
+.examples { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--surface); border: 2px dashed var(--line); border-radius: var(--r-md); padding: 10px 14px; font-size: .9rem; color: var(--muted); }
+.examples strong { color: var(--ink); font-weight: 500; }
+
+/* Home */
+.hello h1 { font-size: clamp(1.9rem, 6vw, 2.6rem); }
+.hello p { margin: 6px 0 0; color: var(--muted); font-size: 1.02rem; }
+.today-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--c-soft, var(--surface)); color: var(--c-deep, var(--ink)); font-size: .88rem; font-weight: 500; border: 0; text-decoration: none; }
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.tile { position: relative; overflow: hidden; text-align: left; border: 0; border-radius: var(--r-lg); padding: 18px 18px 16px; background: var(--c-soft); color: var(--ink); display: flex; flex-direction: column; gap: 6px; min-height: 168px; text-decoration: none; transition: transform .15s ease; }
+.tile:hover { transform: translateY(-2px); }
+.tile:active { transform: scale(.98); }
+.tile.span2 { grid-column: span 2; }
+.tile-blob { position: absolute; right: -26px; top: -26px; width: 120px; height: 120px; background: var(--c); opacity: .2; border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
+.tile-icon { width: 46px; height: 46px; border-radius: 15px; background: var(--c); display: grid; place-items: center; font-size: 1.4rem; position: relative; }
+.tile h2 { font-size: 1.25rem; color: var(--c-deep); position: relative; margin-top: 6px; }
+.tile .big { font-family: var(--f-display); font-size: 2rem; font-weight: 600; line-height: 1; margin-top: auto; font-variant-numeric: tabular-nums; }
+.tile .big small { font-size: .95rem; font-weight: 500; color: var(--muted); margin-left: 4px; font-family: var(--f-body); }
+.tile .sub { font-size: .86rem; color: var(--muted); }
+.tile-peek { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.tile-peek li { font-size: .9rem; background: var(--surface); border-radius: 10px; padding: 6px 10px; display: flex; gap: 8px; align-items: center; min-width: 0; }
+.tile-peek li span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.one-thing-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; border-radius: var(--r-lg); border: 0; background: var(--ink); color: var(--bg); font-family: var(--f-display); font-size: 1.15rem; font-weight: 600; }
+.one-thing-btn:hover { filter: brightness(1.1); }
+
+/* Focus card */
+.focus { background: var(--surface); border: 3px solid var(--tasks); border-radius: var(--r-lg); padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow); }
+.focus .kicker { color: var(--tasks-deep); }
+.focus .focus-text { font-family: var(--f-display); font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+.focus-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--c, var(--tasks)); color: #fff; font-weight: 500; white-space: nowrap; }
+.b-clean .btn, .btn.on-clean { color: #3A2600; }
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.btn.soft { background: var(--c-soft); color: var(--c-deep); }
+.btn.danger { background: var(--hot-soft); color: var(--hot); }
+.btn.small { min-height: 34px; padding: 0 12px; font-size: .86rem; }
+.link-btn { background: none; border: 0; padding: 4px 6px; color: var(--c-deep, var(--muted)); font-weight: 500; font-size: .88rem; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Add bar */
+.addbar { background: var(--surface); border-radius: var(--r-lg); padding: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; border: 2px solid var(--c-soft); }
+.add-row { display: flex; gap: 8px; }
+.add-row input[type="text"], .add-row input[type="number"] { flex: 1; min-width: 0; height: 50px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface-2); padding: 0 16px; font-size: 1.02rem; }
+.add-row input:focus { border-color: var(--c); outline: none; }
+.add-row .btn { height: 50px; border-radius: 16px; font-size: 1.02rem; padding: 0 20px; }
+.add-opts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.add-opts .lbl { font-size: .8rem; color: var(--muted); }
+.hint { font-size: .82rem; color: var(--muted); }
+
+/* Segmented + chips */
+.seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; border-radius: 999px; padding: 6px 12px; font-size: .86rem; color: var(--muted); font-weight: 500; min-height: 34px; }
+.seg button[aria-pressed="true"] { background: var(--c, var(--tasks)); color: #fff; }
+.b-clean .seg button[aria-pressed="true"] { color: #3A2600; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+.chip { flex: none; border: 2px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 14px; font-size: .9rem; font-weight: 500; min-height: 38px; display: inline-flex; align-items: center; gap: 6px; }
+.chip[aria-pressed="true"] { border-color: var(--c); background: var(--c-soft); color: var(--c-deep); }
+.chip .n { font-size: .75rem; background: var(--bg); border-radius: 999px; padding: 1px 7px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] .n { background: var(--surface); color: var(--c-deep); }
+.chip.hot[aria-pressed="true"] { border-color: var(--hot); background: var(--hot-soft); color: var(--hot); }
+select.chip-select { appearance: none; -webkit-appearance: none; border: 2px solid var(--c-soft); background: var(--c-soft); color: var(--c-deep); border-radius: 999px; padding: 6px 30px 6px 12px; font-size: .88rem; font-weight: 500; min-height: 36px; max-width: 100%;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+.toggle { border: 2px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: .86rem; font-weight: 500; min-height: 36px; color: var(--muted); }
+.toggle[aria-pressed="true"] { background: var(--hot-soft); border-color: var(--hot); color: var(--hot); }
+
+.controls { display: flex; flex-direction: column; gap: 10px; }
+.controls-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+
+/* Lists */
+.group { display: flex; flex-direction: column; gap: 8px; }
+.group-head { display: flex; align-items: center; gap: 8px; font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; padding: 0 4px; }
+.group-head .count { font-family: var(--f-body); font-size: .78rem; color: var(--muted); font-weight: 400; background: var(--surface); border-radius: 999px; padding: 1px 8px; border: 1px solid var(--line); }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.item { display: flex; align-items: center; gap: 12px; background: var(--surface); border-radius: var(--r-md); padding: 10px 10px 10px 12px; box-shadow: var(--shadow); min-height: 60px; }
+.item.urgent { box-shadow: var(--shadow), inset 0 0 0 2px var(--hot); }
+.item.done { opacity: .6; box-shadow: none; background: var(--surface-2); }
+.item.done .item-text { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: var(--muted); }
+.check { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--c, var(--tasks)); background: transparent; display: grid; place-items: center; transition: transform .15s ease, background .15s ease; padding: 0; }
+.check:hover { background: var(--c-soft); }
+.check:active { transform: scale(.85); }
+.check svg { width: 18px; height: 18px; opacity: 0; }
+.done .check, .check[aria-checked="true"] { background: var(--c); }
+.done .check svg, .check[aria-checked="true"] svg { opacity: 1; }
+.check svg path { stroke: #fff; }
+.b-clean .check svg path { stroke: #3A2600; }
+.item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; background: none; border: 0; text-align: left; padding: 2px 0; }
+.item-text { font-size: 1rem; overflow-wrap: anywhere; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: .74rem; font-weight: 500; padding: 2px 8px; border-radius: 999px; background: var(--c-soft); color: var(--c-deep); white-space: nowrap; }
+.tag.hot { background: var(--hot-soft); color: var(--hot); }
+.tag.warn { background: var(--warn-soft); color: var(--clean-deep); }
+.tag.ok { background: var(--ok-soft); color: var(--grocery-deep); }
+.tag.plain { background: var(--bg); color: var(--muted); }
+.more { flex: none; width: 38px; height: 38px; border-radius: 12px; border: 0; background: transparent; color: var(--muted); font-size: 1.2rem; display: grid; place-items: center; }
+.more:hover { background: var(--bg); }
+.empty { text-align: center; padding: 28px 16px; color: var(--muted); background: var(--surface); border-radius: var(--r-lg); border: 2px dashed var(--line); }
+.empty .em-big { font-size: 2rem; display: block; margin-bottom: 4px; }
+details.done-box { background: transparent; }
+details.done-box summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 4px; color: var(--muted); font-weight: 500; }
+details.done-box summary::-webkit-details-marker { display: none; }
+details.done-box summary .caret { display: inline-block; transition: transform .15s; }
+details.done-box[open] summary .caret { transform: rotate(90deg); }
+details.done-box .list { margin-top: 6px; }
+
+/* Rooms */
+.rooms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.room { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.room-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.room-head h3 { font-size: 1.1rem; display: flex; gap: 8px; align-items: center; }
+.bar { height: 10px; border-radius: 999px; background: var(--c-soft); overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 999px; background: var(--c); transition: width .4s ease; }
+.progress-card { background: var(--surface); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; }
+.progress-card .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.progress-card .pct { font-family: var(--f-display); font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Money */
+.money-top { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 12px; }
+.stat { background: var(--surface); border-radius: var(--r-md); padding: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stat.hero { background: var(--money-soft); box-shadow: none; }
+.stat .lbl { font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
+.stat .val { font-family: var(--f-display); font-weight: 600; font-size: 1.45rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat.hero .val { font-size: 1.9rem; color: var(--money-deep); }
+.stat .val.pos { color: var(--grocery-deep); }
+.stat .val.neg { color: var(--hot); }
+.month-nav { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+.month-nav button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--bg); font-size: 1rem; }
+.month-nav span { font-family: var(--f-display); font-weight: 600; min-width: 128px; text-align: center; }
+.money-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.panel { background: var(--surface); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel h3 { font-size: 1.1rem; }
+.amt { font-family: var(--f-display); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.amt.in { color: var(--grocery-deep); }
+.amt.out { color: var(--ink); }
+.cat-bars { display: flex; flex-direction: column; gap: 10px; }
+.cat-bar .row { display: flex; justify-content: space-between; gap: 8px; font-size: .9rem; }
+.cat-bar .row .v { font-variant-numeric: tabular-nums; color: var(--muted); }
+.cat-bar .track { height: 12px; margin-top: 4px; border-radius: 4px; background: var(--bg); overflow: hidden; }
+.cat-bar .track i { display: block; height: 100%; background: var(--money); border-radius: 0 4px 4px 0; min-width: 4px; }
+.day-label { font-size: .8rem; color: var(--muted); font-weight: 500; padding: 4px 4px 0; }
+.money-add { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 8px; }
+.money-add input { height: 50px; border-radius: 16px; border: 2px solid var(--line); background: var(--surface-2); padding: 0 14px; min-width: 0; width: 100%; font-size: 1rem; }
+.money-add input:focus { border-color: var(--money); outline: none; }
+
+/* Care */
+.care-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.care-card { background: var(--surface); border-radius: var(--r-lg); padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; min-width: 0; position: relative; }
+.care-card .care-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.care-emoji { width: 48px; height: 48px; border-radius: 50% 50% 50% 14px; background: var(--care-soft); display: grid; place-items: center; font-size: 1.5rem; flex: none; }
+.care-card h3 { font-size: 1.08rem; overflow-wrap: anywhere; }
+.care-card .when { font-size: .84rem; color: var(--muted); }
+.dots { display: flex; gap: 6px; align-items: center; }
+.dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line); display: block; }
+.dots i.on { background: var(--care); border-color: var(--care); }
+.dots .dl { font-size: .72rem; color: var(--muted); margin-left: 4px; }
+.status { font-size: .76rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.status.fresh { background: var(--ok-soft); color: var(--grocery-deep); }
+.status.soon { background: var(--warn-soft); color: var(--clean-deep); }
+.status.due { background: var(--hot-soft); color: var(--hot); }
+.did-btn { margin-top: auto; }
+
+/* Tab bar */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; justify-content: center;
+  padding: 8px max(10px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(10px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(to top, var(--bg) 60%, transparent); pointer-events: none; }
+.tabbar-inner { pointer-events: auto; display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 24px; padding: 6px; width: 100%; max-width: 620px; }
+.tab { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 18px; text-decoration: none; color: var(--muted); font-size: .7rem; font-weight: 500; }
+.tab .ti { width: 34px; height: 30px; border-radius: 12px; display: grid; place-items: center; font-size: 1.15rem; transition: background .15s; }
+.tab[aria-current="page"] { color: var(--c-deep, var(--ink)); }
+.tab[aria-current="page"] .ti { background: var(--c-soft, var(--bg)); }
+.tab span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+/* Sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; background: rgba(20, 16, 40, .45); display: flex; align-items: flex-end; justify-content: center; padding: 0 max(0px, env(safe-area-inset-right, 0px)) 0 max(0px, env(safe-area-inset-left, 0px)); }
+.sheet { width: 100%; max-width: 560px; max-height: 90%; overflow-y: auto; background: var(--surface); border-radius: 28px 28px 0 0; padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; animation: up .22s ease; }
+.sheet-grab { width: 44px; height: 5px; border-radius: 999px; background: var(--line); margin: 0 auto 4px; }
+.sheet h2 { font-size: 1.35rem; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > label, .field > .flabel { font-size: .82rem; font-weight: 500; color: var(--muted); }
+.field input, .field select, .field textarea { height: 48px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface-2); padding: 0 14px; font-size: 1rem; width: 100%; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--c, var(--tasks)); }
+.sheet-actions { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; padding-top: 4px; }
+.sheet-actions .right { display: flex; gap: 8px; }
+.sheet p { margin: 0; color: var(--muted); }
+.menu-list { display: flex; flex-direction: column; gap: 8px; }
+.menu-list .btn { justify-content: flex-start; width: 100%; border-radius: 16px; min-height: 52px; }
+@keyframes up { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Toast */
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--tab-h) + 26px + env(safe-area-inset-bottom, 0px)); z-index: 60; background: var(--ink); color: var(--bg); padding: 10px 12px 10px 18px; border-radius: 999px; display: flex; align-items: center; gap: 12px; font-weight: 500; box-shadow: var(--shadow); max-width: calc(100% - 32px); animation: up .2s ease; }
+.toast button { background: var(--bg); color: var(--ink); border: 0; border-radius: 999px; padding: 6px 14px; font-weight: 600; }
+
+/* Confetti */
+.pop { position: fixed; width: 10px; height: 10px; border-radius: 50%; pointer-events: none; z-index: 70; animation: pop .7s ease-out forwards; }
+@keyframes pop { from { transform: translate(0,0) scale(1); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } }
+
+@media (max-width: 760px) {
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tile.span2 { grid-column: span 2; }
+  .tile { min-height: 150px; }
+  .rooms { grid-template-columns: minmax(0, 1fr); }
+  .money-top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .money-top .stat.hero { grid-column: 1 / -1; }
+  .money-grid { grid-template-columns: minmax(0, 1fr); }
+  .care-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 460px) {
+  .care-grid { grid-template-columns: minmax(0, 1fr); }
+  .stat .val { font-size: 1.15rem; }
+  .add-row .btn { padding: 0 16px; }
+  .brand-name { font-size: 1.15rem; }
+  .sync { display: none; }
+  .money-add { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#home" aria-label="Brain Blocks home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">Brain Blocks</span>
+    </a>
+    <div class="top-right">
+      <span class="sync" id="sync" data-s="local">Saved on this device</span>
+      <button class="icon-btn" id="menuBtn" type="button" aria-label="Backup and settings">⚙️</button>
+    </div>
+  </header>
+  <main id="view" class="view" aria-live="polite"></main>
+</div>
+
+<nav class="tabbar" aria-label="Blocks">
+  <div class="tabbar-inner" id="tabbar"></div>
+</nav>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- small helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const pad = n => String(n).padStart(2, '0');
+const ymd = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseYmd = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, (m || 1) - 1, d || 1); };
+const daysBetween = (a, b) => Math.round((parseYmd(b) - parseYmd(a)) / 86400000);
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd();
+const money = (n, sign = false) => {
+  const v = Number(n) || 0;
+  const s = Math.abs(v).toLocaleString('en-CA', { style: 'currency', currency: 'CAD', minimumFractionDigits: 2 });
+  return (v < 0 ? '−' : (sign && v > 0 ? '+' : '')) + s;
+};
+const ago = s => {
+  if (!s) return 'Not yet';
+  const n = daysBetween(s, today());
+  if (n <= 0) return 'Today';
+  if (n === 1) return 'Yesterday';
+  if (n < 14) return `${n} days ago`;
+  if (n < 60) return `${Math.round(n / 7)} weeks ago`;
+  return `${Math.round(n / 30)} months ago`;
+};
+const kwRegex = list => list.map(k => ({ k, re: new RegExp('\\b' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(s|es)?\\b', 'i') }));
+const CHECK_SVG = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 10.5l3.5 3.5 7.5-8" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ---------- categories + auto-detect ---------- */
+const TASK_CATS = [
+  { id: 'errands', label: 'Errands & shopping', e: '🛒', kw: ['safeway', 'no frills', 'nofrills', 'grocery', 'groceries', 'grocer', 'shopping', 'costco', 'walmart', 'loblaws', 'sobeys', 'shoppers', 'pharmacy', 'pick up', 'drop off', 'return', 'post office', 'buy', 'store', 'mall', 'errand', 'canadian tire', 'ikea'] },
+  { id: 'pets', label: 'Pets', e: '🐾', kw: ['vet', 'veterinarian', 'dog', 'cat', 'puppy', 'kitten', 'pet', 'litter', 'kibble', 'groomer', 'grooming', 'flea'] },
+  { id: 'health', label: 'Health', e: '🩺', kw: ['bloodwork', 'blood work', 'blood test', 'doctor', 'dentist', 'clinic', 'prescription', 'refill', 'meds', 'medication', 'therapy', 'therapist', 'physio', 'eye exam', 'optometrist', 'vaccine', 'checkup', 'check-up', 'appointment', 'pap', 'x-ray', 'ultrasound'] },
+  { id: 'fitness', label: 'Movement', e: '🧘', kw: ['yoga', 'gym', 'pilates', 'run', 'jog', 'walk', 'workout', 'swim', 'bike', 'spin', 'stretch', 'dance', 'hike', 'class', 'barre'] },
+  { id: 'social', label: 'Social', e: '💬', kw: ['call', 'friend', 'text', 'meet', 'meet up', 'catch up', 'coffee with', 'birthday', 'mom', 'dad', 'sister', 'brother', 'family', 'visit', 'hang out', 'dinner with', 'lunch with', 'party', 'socialize', 'facetime', 'date'] },
+  { id: 'admin', label: 'Admin & forms', e: '📄', kw: ['form', 'submit', 'email', 'bill', 'pay', 'tax', 'taxes', 'insurance', 'renew', 'paperwork', 'apply', 'application', 'sign', 'bank', 'cancel', 'book', 'schedule', 'print', 'passport', 'license', 'reply', 'claim'] },
+  { id: 'home', label: 'Home', e: '🏠', kw: ['clean', 'laundry', 'fix', 'repair', 'plant', 'water plants', 'dishes', 'tidy', 'organize', 'declutter', 'trash', 'garbage', 'recycling', 'vacuum', 'cook', 'meal prep'] },
+  { id: 'work', label: 'Work & study', e: '💼', kw: ['work', 'meeting', 'report', 'study', 'homework', 'assignment', 'project', 'deadline', 'client', 'portfolio', 'resume', 'interview'] },
+  { id: 'other', label: 'Other', e: '✨', kw: [] }
+].map(c => ({ ...c, rx: kwRegex(c.kw) }));
+
+const AISLES = [
+  { id: 'produce', label: 'Produce', e: '🥦', kw: ['apple', 'banana', 'berry', 'berries', 'strawberry', 'strawberries', 'blueberry', 'blueberries', 'raspberry', 'raspberries', 'grape', 'orange', 'lemon', 'lime', 'avocado', 'tomato', 'tomatoes', 'potato', 'potatoes', 'sweet potato', 'onion', 'green onion', 'garlic', 'carrot', 'lettuce', 'spinach', 'kale', 'cucumber', 'pepper', 'bell pepper', 'broccoli', 'cauliflower', 'celery', 'mushroom', 'zucchini', 'squash', 'ginger', 'herb', 'cilantro', 'parsley', 'basil', 'mint', 'salad', 'fruit', 'veggie', 'veggies', 'vegetable', 'mango', 'pineapple', 'peach', 'pear', 'melon', 'watermelon', 'corn', 'cabbage', 'arugula', 'kiwi', 'cherry', 'cherries', 'plum', 'asparagus', 'beet', 'radish', 'eggplant', 'leek', 'jalapeno'] },
+  { id: 'bakery', label: 'Bakery', e: '🥖', kw: ['bread', 'bagel', 'bun', 'tortilla', 'wrap', 'croissant', 'muffin', 'pita', 'baguette', 'cake', 'naan', 'sourdough', 'english muffin', 'roll'] },
+  { id: 'meat', label: 'Meat, fish & tofu', e: '🍗', kw: ['chicken', 'chicken breast', 'chicken thigh', 'beef', 'ground beef', 'ground turkey', 'pork', 'turkey', 'bacon', 'sausage', 'ham', 'salmon', 'fish', 'shrimp', 'steak', 'tofu', 'tempeh', 'lamb', 'deli meat', 'cod', 'tilapia'] },
+  { id: 'dairy', label: 'Dairy & eggs', e: '🥛', kw: ['milk', 'egg', 'eggs', 'cheese', 'yogurt', 'yoghurt', 'greek yogurt', 'butter', 'cream', 'sour cream', 'cottage cheese', 'cream cheese', 'oat milk', 'almond milk', 'soy milk', 'kefir', 'mozzarella', 'cheddar', 'parmesan', 'feta', 'half and half', 'creamer'] },
+  { id: 'frozen', label: 'Frozen', e: '🧊', kw: ['frozen', 'ice cream', 'frozen pizza', 'fries', 'popsicle', 'ice', 'frozen berries', 'frozen veggies', 'waffles', 'perogies', 'dumplings'] },
+  { id: 'pantry', label: 'Pantry', e: '🥫', kw: ['rice', 'pasta', 'spaghetti', 'noodle', 'flour', 'sugar', 'oil', 'olive oil', 'vinegar', 'sauce', 'pasta sauce', 'soy sauce', 'bean', 'beans', 'chickpeas', 'lentil', 'canned', 'tuna', 'soup', 'cereal', 'oats', 'oatmeal', 'peanut butter', 'almond butter', 'jam', 'honey', 'spice', 'salt', 'coffee', 'tea', 'broth', 'stock', 'ketchup', 'mustard', 'mayo', 'mayonnaise', 'syrup', 'maple syrup', 'quinoa', 'baking soda', 'baking powder', 'vanilla', 'cinnamon', 'salsa', 'hot sauce', 'nutella', 'protein powder'] },
+  { id: 'snacks', label: 'Snacks', e: '🍪', kw: ['chips', 'crackers', 'cookie', 'chocolate', 'candy', 'popcorn', 'nuts', 'almonds', 'granola', 'granola bar', 'pretzel', 'snack', 'gum', 'trail mix', 'rice cakes', 'hummus'] },
+  { id: 'drinks', label: 'Drinks', e: '🧃', kw: ['juice', 'orange juice', 'water', 'sparkling water', 'soda', 'pop', 'kombucha', 'wine', 'beer', 'coke', 'la croix', 'bubly', 'gatorade', 'energy drink', 'cider'] },
+  { id: 'household', label: 'Household', e: '🧻', kw: ['paper towel', 'paper towels', 'toilet paper', 'tissue', 'tissues', 'dish soap', 'dishwasher pods', 'detergent', 'laundry detergent', 'garbage bag', 'garbage bags', 'trash bag', 'sponge', 'foil', 'plastic wrap', 'cleaner', 'bleach', 'ziploc', 'battery', 'batteries', 'light bulb', 'dryer sheets', 'candle'] },
+  { id: 'personal', label: 'Personal care', e: '🧴', kw: ['shampoo', 'conditioner', 'soap', 'toothpaste', 'toothbrush', 'deodorant', 'floss', 'lotion', 'razor', 'sunscreen', 'tampon', 'pads', 'face wash', 'body wash', 'cotton pads', 'q-tips', 'vitamins', 'advil', 'tylenol', 'face mask', 'moisturizer', 'lip balm'] },
+  { id: 'pet', label: 'Pet', e: '🐾', kw: ['dog food', 'cat food', 'kibble', 'litter', 'cat litter', 'pet food', 'dog treats', 'cat treats', 'poop bags'] },
+  { id: 'other', label: 'Other', e: '🛍️', kw: [] }
+].map(c => ({ ...c, rx: kwRegex(c.kw) }));
+
+const STORES = ['Any store', 'Safeway', 'No Frills', 'Costco', 'Shoppers'];
+
+const ROOMS = [
+  { id: 'kitchen', label: 'Kitchen', e: '🍳', kw: ['kitchen', 'dishes', 'dishwasher', 'fridge', 'stove', 'oven', 'counter', 'counters', 'microwave', 'pantry', 'cupboard', 'toaster'] },
+  { id: 'bathroom', label: 'Bathroom', e: '🛁', kw: ['bathroom', 'toilet', 'shower', 'tub', 'bathtub', 'mirror', 'sink', 'tiles', 'towel rack'] },
+  { id: 'bedroom', label: 'Bedroom', e: '🛏️', kw: ['bedroom', 'sheets', 'bed', 'make bed', 'closet', 'pillow', 'dresser', 'nightstand', 'wardrobe'] },
+  { id: 'living', label: 'Living room', e: '🛋️', kw: ['living room', 'couch', 'sofa', 'tv', 'coffee table', 'cushion', 'blanket', 'bookshelf', 'rug'] },
+  { id: 'laundry', label: 'Laundry', e: '🧺', kw: ['laundry', 'wash clothes', 'fold', 'folding', 'iron', 'towels', 'clothes', 'hamper', 'dryer'] },
+  { id: 'entry', label: 'Entry & outside', e: '🚪', kw: ['entry', 'entryway', 'shoes', 'door', 'porch', 'balcony', 'garbage', 'recycling', 'trash', 'compost', 'car', 'yard'] },
+  { id: 'whole', label: 'Whole home', e: '🏡', kw: ['vacuum', 'mop', 'dust', 'sweep', 'floor', 'floors', 'window', 'windows', 'declutter', 'baseboard', 'plants', 'water plants'] }
+].map(c => ({ ...c, rx: kwRegex(c.kw) }));
+const FREQS = [{ id: 'daily', label: 'Daily', days: 1 }, { id: 'weekly', label: 'Weekly', days: 7 }, { id: 'monthly', label: 'Monthly', days: 30 }, { id: 'once', label: 'Once', days: 0 }];
+
+const MONEY_CATS = [
+  { id: 'income', label: 'Income', e: '💰', kw: ['paycheque', 'paycheck', 'pay', 'salary', 'payroll', 'refund', 'deposit', 'income', 'freelance', 'e-transfer from', 'transfer from', 'cashback', 'reimbursement', 'gst credit'] },
+  { id: 'groceries', label: 'Groceries', e: '🛒', kw: ['safeway', 'no frills', 'nofrills', 'grocery', 'groceries', 'costco', 'loblaws', 'sobeys', 'metro', 'food basics', 'freshco', 'walmart', 'superstore', 'farm boy', 'whole foods', 'save on foods', 'save-on-foods', 't&t'] },
+  { id: 'eating', label: 'Eating out', e: '🍜', kw: ['restaurant', 'coffee', 'cafe', 'starbucks', 'tim hortons', 'tims', 'uber eats', 'doordash', 'skip the dishes', 'skipthedishes', 'takeout', 'lunch', 'dinner', 'brunch', 'pizza', 'sushi', 'bar', 'pub', 'mcdonalds', 'bubble tea'] },
+  { id: 'bills', label: 'Rent & bills', e: '🏠', kw: ['rent', 'hydro', 'internet', 'phone', 'phone bill', 'bill', 'utilities', 'insurance', 'mortgage', 'rogers', 'bell', 'telus', 'fido', 'koodo', 'freedom', 'enbridge', 'fortis', 'bc hydro', 'tenant insurance'] },
+  { id: 'transport', label: 'Transport', e: '🚌', kw: ['gas', 'presto', 'compass', 'uber', 'lyft', 'transit', 'bus', 'parking', 'taxi', 'car', 'go train', 'via rail', 'car insurance', 'oil change', 'evo', 'modo'] },
+  { id: 'pets', label: 'Pets', e: '🐾', kw: ['vet', 'pet', 'dog', 'cat', 'petsmart', 'pet valu', 'kibble', 'litter', 'groomer'] },
+  { id: 'health', label: 'Health', e: '🩺', kw: ['pharmacy', 'shoppers', 'shoppers drug mart', 'rexall', 'doctor', 'dentist', 'therapy', 'therapist', 'meds', 'prescription', 'physio', 'bloodwork', 'optometrist', 'glasses'] },
+  { id: 'selfcare', label: 'Self-care', e: '💅', kw: ['yoga', 'massage', 'spa', 'nails', 'hair', 'haircut', 'facial', 'gym', 'class', 'pilates', 'skincare', 'sephora', 'lululemon'] },
+  { id: 'subs', label: 'Subscriptions', e: '📺', kw: ['netflix', 'spotify', 'disney', 'subscription', 'apple', 'icloud', 'prime', 'amazon prime', 'crave', 'youtube', 'patreon', 'adobe', 'chatgpt', 'claude'] },
+  { id: 'shopping', label: 'Shopping', e: '🛍️', kw: ['amazon', 'clothes', 'winners', 'target', 'shoes', 'store', 'ikea', 'homesense', 'canadian tire', 'aritzia', 'zara', 'uniqlo', 'dollarama', 'indigo', 'gift'] },
+  { id: 'savings', label: 'Savings', e: '🐷', kw: ['savings', 'tfsa', 'rrsp', 'fhsa', 'invest', 'transfer to savings'] },
+  { id: 'other', label: 'Other', e: '✨', kw: [] }
+].map(c => ({ ...c, rx: kwRegex(c.kw) }));
+
+const CARE_KINDS = [
+  { id: 'pamper', label: 'Pamper', e: '🧖' },
+  { id: 'body', label: 'Body', e: '🌱' },
+  { id: 'mind', label: 'Mind', e: '🧠' },
+  { id: 'social', label: 'Social', e: '🫶' }
+];
+const CARE_EVERY = [{ v: 1, label: 'Every day' }, { v: 2, label: 'Every 2 days' }, { v: 3, label: 'Every 3 days' }, { v: 7, label: 'Every week' }, { v: 14, label: 'Every 2 weeks' }, { v: 30, label: 'Every month' }];
+const CARE_IDEAS = [
+  { text: 'Soak in the tub', kind: 'pamper', every: 7, e: '🛁' },
+  { text: 'Massage', kind: 'pamper', every: 14, e: '💆' },
+  { text: 'Facial or face mask', kind: 'pamper', every: 7, e: '🧖' },
+  { text: 'Meet up with a friend', kind: 'social', every: 7, e: '☕' },
+  { text: 'Call someone I love', kind: 'social', every: 7, e: '📞' },
+  { text: 'Walk outside', kind: 'body', every: 2, e: '🌳' },
+  { text: 'Stretch for 5 minutes', kind: 'body', every: 1, e: '🤸' },
+  { text: 'Drink a big glass of water', kind: 'body', every: 1, e: '💧' },
+  { text: 'Take my meds / vitamins', kind: 'body', every: 1, e: '💊' },
+  { text: 'Eat a real meal', kind: 'body', every: 1, e: '🥗' },
+  { text: 'Brain dump in a journal', kind: 'mind', every: 3, e: '📓' },
+  { text: '10 quiet minutes, no phone', kind: 'mind', every: 2, e: '🌙' },
+  { text: 'Do something creative', kind: 'mind', every: 7, e: '🎨' },
+  { text: 'Go to bed on time', kind: 'body', every: 1, e: '😴' }
+];
+
+function detect(text, cats, longest) {
+  const t = String(text || '').toLowerCase();
+  let best = null, bestLen = 0;
+  for (const c of cats) {
+    for (const { k, re } of c.rx) {
+      if (re.test(t)) {
+        if (!longest) return c.id;
+        if (k.length > bestLen) { best = c.id; bestLen = k.length; }
+      }
+    }
+  }
+  return best || cats[cats.length - 1].id;
+}
+const detectTask = t => detect(t, TASK_CATS, false);
+const detectAisle = t => detect(t, AISLES, true);
+const detectRoom = t => detect(t, ROOMS, false);
+const detectMoney = t => detect(t, MONEY_CATS, true);
+const detectStore = t => { const s = t.toLowerCase(); return s.includes('safeway') ? 'Safeway' : (s.includes('no frills') || s.includes('nofrills')) ? 'No Frills' : s.includes('costco') ? 'Costco' : null; };
+const byId = (list, id) => list.find(x => x.id === id) || list[list.length - 1];
+const careEmoji = c => c.e || (CARE_IDEAS.find(i => i.text.toLowerCase() === c.text.toLowerCase()) || {}).e || byId(CARE_KINDS, c.kind).e;
+
+/* ---------- examples (only shown until real data exists) ---------- */
+function examples(k) {
+  const t = today();
+  const ex = o => ({ id: uid(), ex: true, ...o });
+  switch (k) {
+    case 'tasks': return { items: [
+      ex({ text: 'Go grocery shopping at Safeway or No Frills', cat: 'errands', when: 'today', urgent: false, done: false, addedOn: t }),
+      ex({ text: 'Book vet appointment', cat: 'pets', when: 'today', urgent: true, done: false, addedOn: t }),
+      ex({ text: 'Submit vet forms', cat: 'pets', when: 'week', urgent: true, done: false, addedOn: t }),
+      ex({ text: 'Book yoga class', cat: 'fitness', when: 'week', urgent: false, done: false, addedOn: t }),
+      ex({ text: 'Do bloodwork', cat: 'health', when: 'month', urgent: false, done: false, addedOn: t }),
+      ex({ text: 'Call a friend to catch up', cat: 'social', when: 'week', urgent: false, done: false, addedOn: t }),
+      ex({ text: 'Drink water first thing', cat: 'health', when: 'today', urgent: false, done: true, doneAt: t, addedOn: t })
+    ] };
+    case 'grocery': return { items: [
+      ex({ text: 'Bananas', aisle: 'produce', store: 'No Frills', qty: '6', got: false }),
+      ex({ text: 'Spinach', aisle: 'produce', store: 'Any store', qty: '', got: false }),
+      ex({ text: 'Oat milk', aisle: 'dairy', store: 'Safeway', qty: '2', got: false }),
+      ex({ text: 'Eggs', aisle: 'dairy', store: 'Any store', qty: '1 dozen', got: false }),
+      ex({ text: 'Chicken thighs', aisle: 'meat', store: 'No Frills', qty: '', got: false }),
+      ex({ text: 'Sourdough bread', aisle: 'bakery', store: 'Safeway', qty: '', got: false }),
+      ex({ text: 'Peanut butter', aisle: 'pantry', store: 'Any store', qty: '', got: true }),
+      ex({ text: 'Paper towels', aisle: 'household', store: 'No Frills', qty: '', got: false })
+    ] };
+    case 'clean': return { items: [
+      ex({ text: 'Do the dishes', room: 'kitchen', freq: 'daily', doneAt: t }),
+      ex({ text: 'Wipe counters', room: 'kitchen', freq: 'daily', doneAt: null }),
+      ex({ text: 'Clean the toilet', room: 'bathroom', freq: 'weekly', doneAt: addDays(t, -9) }),
+      ex({ text: 'Wipe the mirror', room: 'bathroom', freq: 'weekly', doneAt: addDays(t, -2) }),
+      ex({ text: 'Change the sheets', room: 'bedroom', freq: 'weekly', doneAt: null }),
+      ex({ text: 'Fluff couch cushions', room: 'living', freq: 'weekly', doneAt: addDays(t, -1) }),
+      ex({ text: 'Wash, dry and fold one load', room: 'laundry', freq: 'weekly', doneAt: null }),
+      ex({ text: 'Vacuum floors', room: 'whole', freq: 'weekly', doneAt: addDays(t, -3) }),
+      ex({ text: 'Take out recycling', room: 'entry', freq: 'weekly', doneAt: null })
+    ] };
+    case 'money': {
+      const m = t.slice(0, 8);
+      const d = n => m + pad(Math.min(n, Number(t.slice(8)) || 1));
+      return { start: 1200, entries: [
+        ex({ date: d(1), desc: 'Paycheque', amount: 2350, dir: 'in', cat: 'income' }),
+        ex({ date: d(1), desc: 'Rent', amount: 1450, dir: 'out', cat: 'bills' }),
+        ex({ date: d(3), desc: 'No Frills', amount: 64.18, dir: 'out', cat: 'groceries' }),
+        ex({ date: d(5), desc: 'Vet visit', amount: 120, dir: 'out', cat: 'pets' }),
+        ex({ date: d(7), desc: 'Yoga drop-in', amount: 22, dir: 'out', cat: 'selfcare' }),
+        ex({ date: d(9), desc: 'Safeway', amount: 48.9, dir: 'out', cat: 'groceries' }),
+        ex({ date: d(10), desc: 'Spotify', amount: 11.99, dir: 'out', cat: 'subs' }),
+        ex({ date: d(11), desc: 'Coffee with Sam', amount: 6.5, dir: 'out', cat: 'eating' })
+      ] };
+    }
+    case 'care': return { items: [
+      ex({ text: 'Soak in the tub', kind: 'pamper', every: 7, e: '🛁', log: [addDays(t, -5)] }),
+      ex({ text: 'Facial or face mask', kind: 'pamper', every: 7, e: '🧖', log: [addDays(t, -10)] }),
+      ex({ text: 'Massage', kind: 'pamper', every: 14, e: '💆', log: [] }),
+      ex({ text: 'Meet up with a friend', kind: 'social', every: 7, e: '☕', log: [addDays(t, -3)] }),
+      ex({ text: 'Walk outside', kind: 'body', every: 2, e: '🌳', log: [t, addDays(t, -2), addDays(t, -4)] }),
+      ex({ text: 'Take my meds / vitamins', kind: 'body', every: 1, e: '💊', log: [addDays(t, -1), addDays(t, -2), addDays(t, -3)] })
+    ] };
+  }
+}
+const BLANK = { tasks: () => ({ items: [] }), grocery: () => ({ items: [] }), clean: () => ({ items: [] }), money: () => ({ start: 0, entries: [] }), care: () => ({ items: [] }) };
+function normalize(k, d) {
+  const o = JSON.parse(JSON.stringify(d || {}));
+  if (k === 'money') { o.start = Number(o.start) || 0; o.entries = Array.isArray(o.entries) ? o.entries : []; }
+  else o.items = Array.isArray(o.items) ? o.items : [];
+  return o;
+}
+const listOf = k => k === 'money' ? S.money.entries : S[k].items;
+
+/* ---------- state + persistence ---------- */
+const KEYS = ['tasks', 'grocery', 'clean', 'money', 'care'];
+const LSP = 'brainblocks.v1.';
+const lsGet = k => { try { const v = localStorage.getItem(LSP + k); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(LSP + k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } };
+const S = {};
+KEYS.forEach(k => { const v = lsGet(k); S[k] = v ? normalize(k, v) : examples(k); });
+
+const R = { db: null, uid: null, refs: {}, answered: {}, dirty: {}, writing: {}, again: {}, timers: {}, preConnect: {} };
+let syncState = 'local';
+function setSync(s) {
+  syncState = s;
+  const el = $('#sync');
+  const text = { local: 'Saved on this device', loading: 'Loading your stuff…', cloud: 'Saved ✓', saving: 'Saving…', error: 'Not saved yet, will retry', unreachable: "Can't reach your saved data yet" }[s] || '';
+  el.dataset.s = s; el.textContent = text;
+}
+
+function save(k) {
+  lsSet(k, S[k]);
+  if (!R.refs[k]) { R.preConnect[k] = true; return; }
+  R.dirty[k] = true;
+  setSync('saving');
+  clearTimeout(R.timers[k]);
+  R.timers[k] = setTimeout(() => flush(k), 600);
+}
+async function flush(k) {
+  if (R.writing[k]) { R.again[k] = true; return; }
+  R.writing[k] = true; R.dirty[k] = false;
+  try {
+    await R.refs[k].set(JSON.parse(JSON.stringify(S[k])));
+    if (!Object.values(R.dirty).some(Boolean)) setSync('cloud');
+  } catch (e) {
+    R.dirty[k] = true; setSync('error');
+    clearTimeout(R.timers[k]); R.timers[k] = setTimeout(() => flush(k), 8000);
+  }
+  R.writing[k] = false;
+  if (R.again[k]) { R.again[k] = false; flush(k); }
+}
+
+async function connect() {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  try {
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    R.db = db; R.uid = id;
+    setSync('loading');
+    const timer = setTimeout(() => { if (!KEYS.every(k => R.answered[k])) setSync('unreachable'); }, 10000);
+    KEYS.forEach(k => {
+      const ref = db.collection('data/users/' + id).doc(k);
+      R.refs[k] = ref;
+      ref.onSnapshot(snap => {
+        const meta = snap.metadata || {};
+        const first = !R.answered[k] && !meta.fromCache;
+        if (!meta.fromCache) R.answered[k] = true;
+        if (KEYS.every(x => R.answered[x])) { clearTimeout(timer); if (syncState === 'loading' || syncState === 'unreachable') setSync('cloud'); }
+        if (meta.hasPendingWrites || R.dirty[k] || R.writing[k]) return;
+        if (snap.exists) {
+          S[k] = normalize(k, snap.data());
+          lsSet(k, S[k]);
+          render();
+        } else if (first && R.preConnect[k]) {
+          // Edits made before the account store answered: save them now that we know nothing is stored yet.
+          R.preConnect[k] = false;
+          setTimeout(() => save(k), 0);
+        }
+      }, () => { clearTimeout(timer); setSync('error'); });
+    });
+  } catch (e) { /* stays on this device */ }
+}
+
+/* ---------- UI state ---------- */
+const UI = { taskWhen: 'today', taskUrg: 'all', taskGroup: 'type', addWhen: 'today', addUrgent: false, addCat: null, addCatTouched: false,
+  groStore: 'all', addStore: 'Any store', addAisle: null, addAisleTouched: false,
+  addRoom: null, addRoomTouched: false, addFreq: 'weekly',
+  month: today().slice(0, 7), mDir: 'out', mCat: null, mCatTouched: false,
+  careKind: 'pamper', careEvery: 7, focus: null };
+
+const BLOCKS = [
+  { id: 'home', name: 'Home', e: '🏡' },
+  { id: 'tasks', name: 'To-do', e: '✅' },
+  { id: 'grocery', name: 'Groceries', e: '🛒' },
+  { id: 'clean', name: 'Clean', e: '🧽' },
+  { id: 'money', name: 'Money', e: '💸' },
+  { id: 'care', name: 'Self-care', e: '💖' }
+];
+const route = () => { const h = (location.hash || '').slice(1); return BLOCKS.some(b => b.id === h) ? h : 'home'; };
+
+/* ---------- derived ---------- */
+const WHEN = [{ id: 'today', label: 'Today' }, { id: 'week', label: 'This week' }, { id: 'month', label: 'This month' }, { id: 'someday', label: 'Someday' }];
+const whenRank = { today: 0, week: 1, month: 2, someday: 3 };
+function inWhen(t, f) {
+  if (f === 'all') return true;
+  if (f === 'someday') return t.when === 'someday';
+  const lim = whenRank[f];
+  return t.when !== 'someday' && whenRank[t.when] <= lim;
+}
+const cleanDone = c => {
+  if (!c.doneAt) return false;
+  if (c.freq === 'once') return true;
+  const n = daysBetween(c.doneAt, today());
+  return c.freq === 'daily' ? n < 1 : c.freq === 'weekly' ? n < 7 : n < 30;
+};
+const careLast = c => (c.log || []).slice().sort().pop() || null;
+function careStatus(c) {
+  const last = careLast(c);
+  if (!last) return { id: 'due', label: 'Waiting for you' };
+  const n = daysBetween(last, today());
+  if (n === 0) return { id: 'fresh', label: 'Done today' };
+  if (n < c.every * 0.7) return { id: 'fresh', label: 'Fresh' };
+  if (n < c.every) return { id: 'soon', label: 'Soon' };
+  return { id: 'due', label: 'Due' };
+}
+const monthEntries = m => S.money.entries.filter(e => String(e.date).slice(0, 7) === m);
+const balance = () => S.money.start + S.money.entries.reduce((a, e) => a + (e.dir === 'in' ? 1 : -1) * (Number(e.amount) || 0), 0);
+const hasExamples = () => KEYS.some(k => listOf(k).some(i => i.ex));
+
+/* ---------- rendering ---------- */
+const view = $('#view');
+let lastRoute = null;
+function render() {
+  const r = route();
+  const b = BLOCKS.find(x => x.id === r);
+  view.className = 'view' + (r !== 'home' ? ' b-' + r : '');
+  document.title = r === 'home' ? 'Brain Blocks' : `${b.name} · Brain Blocks`;
+  const active = document.activeElement;
+  const keepId = active && active.id && view.contains(active) ? active.id : null;
+  const selStart = keepId && active.selectionStart != null ? active.selectionStart : null;
+  const kept = {};
+  if (r === lastRoute) view.querySelectorAll('form input[id]').forEach(el => { if (el.type !== 'file' && el.value) kept[el.id] = el.value; });
+  lastRoute = r;
+  view.innerHTML = ({ home: viewHome, tasks: viewTasks, grocery: viewGrocery, clean: viewClean, money: viewMoney, care: viewCare })[r]();
+  renderTabs(r);
+  Object.entries(kept).forEach(([id, v]) => { const el = document.getElementById(id); if (el) el.value = v; });
+  if (keepId) { const el = document.getElementById(keepId); if (el) { el.focus(); if (selStart != null && el.setSelectionRange) try { el.setSelectionRange(selStart, selStart); } catch (e) {} } }
+}
+function renderTabs(r) {
+  $('#tabbar').innerHTML = BLOCKS.map(b => `<a class="tab ${b.id !== 'home' ? 'b-' + b.id : ''}" href="#${b.id}" ${b.id === r ? 'aria-current="page"' : ''}><span class="ti" aria-hidden="true">${b.e}</span><span>${b.name}</span></a>`).join('');
+}
+const exBanner = () => hasExamples() ? `<div class="examples"><span><strong>These are example items</strong> to show you around. Edit them, or clear them and start fresh.</span><button class="btn small ghost" data-act="clear-examples" type="button">Clear examples</button></div>` : '';
+const head = (b, title, sub, right = '') => `<div class="view-head"><div><span class="kicker">${b.e} ${esc(b.name)}</span><h1>${title}</h1>${sub ? `<p>${sub}</p>` : ''}</div>${right}</div>`;
+const segHtml = (name, opts, cur) => `<div class="seg" role="group">${opts.map(o => `<button type="button" data-seg="${name}" data-v="${o.id}" aria-pressed="${String(o.id) === String(cur)}">${esc(o.label)}</button>`).join('')}</div>`;
+const optHtml = (list, cur, withEmoji = true) => list.map(c => `<option value="${c.id}" ${c.id === cur ? 'selected' : ''}>${withEmoji ? c.e + ' ' : ''}${esc(c.label)}</option>`).join('');
+const checkBtn = (k, id, on, label) => `<button class="check" type="button" role="checkbox" aria-checked="${on}" aria-label="${esc(label)}" data-act="toggle" data-k="${k}" data-id="${id}">${CHECK_SVG}</button>`;
+const moreBtn = (k, id) => `<button class="more" type="button" aria-label="Edit" data-act="edit" data-k="${k}" data-id="${id}">⋯</button>`;
+const emptyBox = (e, text) => `<div class="empty"><span class="em-big" aria-hidden="true">${e}</span>${text}</div>`;
+
+/* Home */
+function greeting() { const h = new Date().getHours(); return h < 5 ? 'Hello, night owl' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
+function viewHome() {
+  const d = new Date();
+  const tasks = S.tasks.items;
+  const todayOpen = tasks.filter(t => !t.done && t.when === 'today');
+  const urgentOpen = tasks.filter(t => !t.done && t.urgent);
+  const doneToday = tasks.filter(t => t.done && t.doneAt === today()).length;
+  const groLeft = S.grocery.items.filter(i => !i.got);
+  const cleanDue = S.clean.items.filter(c => !cleanDone(c));
+  const careDue = S.care.items.filter(c => careStatus(c).id === 'due');
+  const mE = monthEntries(today().slice(0, 7));
+  const mNet = mE.reduce((a, e) => a + (e.dir === 'in' ? 1 : -1) * (Number(e.amount) || 0), 0);
+  const peek = list => list.length ? `<ul class="tile-peek">${list.slice(0, 3).map(t => `<li><span aria-hidden="true">${t.e}</span><span>${esc(t.text)}</span></li>`).join('')}</ul>` : '';
+  const careWeek = S.care.items.reduce((a, c) => a + (c.log || []).filter(x => daysBetween(x, today()) < 7).length, 0);
+  return `
+  <section class="hello">
+    <h1>${greeting()}!</h1>
+    <p>${d.toLocaleDateString('en-CA', { weekday: 'long', month: 'long', day: 'numeric' })}. Pick one block. You don't have to do everything.</p>
+  </section>
+  ${exBanner()}
+  <div class="today-strip">
+    <a class="pill b-tasks" href="#tasks">✅ ${todayOpen.length} for today</a>
+    ${urgentOpen.length ? `<a class="pill" style="background:var(--hot-soft);color:var(--hot)" href="#tasks">🔥 ${urgentOpen.length} urgent</a>` : ''}
+    ${doneToday ? `<span class="pill b-grocery">🎉 ${doneToday} done today</span>` : ''}
+    ${careDue.length ? `<a class="pill b-care" href="#care">💖 ${careDue.length} self-care ${careDue.length === 1 ? 'thing' : 'things'} waiting</a>` : ''}
+  </div>
+  ${UI.focus ? focusCard() : `<button class="one-thing-btn" type="button" data-act="one-thing">🎯 Just tell me one thing to do</button>`}
+  <section class="tiles" aria-label="Your blocks">
+    <a class="tile span2 b-tasks" href="#tasks"><span class="tile-blob"></span><span class="tile-icon" aria-hidden="true">✅</span><h2>To-do list</h2>
+      <div class="big">${todayOpen.length}<small>for today</small></div>
+      <div class="sub">${urgentOpen.length} urgent · ${tasks.filter(t => !t.done).length} open in total</div>
+      ${peek(todayOpen.sort((a, b) => b.urgent - a.urgent).map(t => ({ e: byId(TASK_CATS, t.cat).e, text: t.text })))}
+    </a>
+    <a class="tile b-grocery" href="#grocery"><span class="tile-blob"></span><span class="tile-icon" aria-hidden="true">🛒</span><h2>Groceries</h2>
+      <div class="big">${groLeft.length}<small>to get</small></div>
+      <div class="sub">${S.grocery.items.length - groLeft.length} already in the cart</div></a>
+    <a class="tile b-clean" href="#clean"><span class="tile-blob"></span><span class="tile-icon" aria-hidden="true">🧽</span><h2>Clean house</h2>
+      <div class="big">${cleanDue.length}<small>chores due</small></div>
+      <div class="sub">${S.clean.items.length - cleanDue.length} of ${S.clean.items.length} are fresh</div></a>
+    <a class="tile b-money" href="#money"><span class="tile-blob"></span><span class="tile-icon" aria-hidden="true">💸</span><h2>Money</h2>
+      <div class="big" style="font-size:1.6rem">${money(mNet, true)}</div>
+      <div class="sub">this month · balance ${money(balance())}</div></a>
+    <a class="tile b-care" href="#care"><span class="tile-blob"></span><span class="tile-icon" aria-hidden="true">💖</span><h2>Self-care</h2>
+      <div class="big">${careWeek}<small>kind things this week</small></div>
+      <div class="sub">${careDue.length ? careDue.length + ' waiting for you' : 'All caught up. Proud of you.'}</div></a>
+  </section>`;
+}
+function pickOne() {
+  const open = S.tasks.items.filter(t => !t.done);
+  if (!open.length) return null;
+  const score = t => (t.urgent ? 4 : 0) + (3 - whenRank[t.when]);
+  const top = Math.max(...open.map(score));
+  const pool = open.filter(t => score(t) === top && t.id !== UI.focus);
+  const p = pool.length ? pool : open.filter(t => score(t) === top);
+  return p[Math.floor(Math.random() * p.length)].id;
+}
+function focusCard() {
+  const t = S.tasks.items.find(x => x.id === UI.focus);
+  if (!t || t.done) { UI.focus = null; return `<button class="one-thing-btn" type="button" data-act="one-thing">🎯 Just tell me one thing to do</button>`; }
+  const c = byId(TASK_CATS, t.cat);
+  return `<section class="focus b-tasks" aria-label="Your one thing">
+    <span class="kicker">🎯 Your one thing right now</span>
+    <div class="focus-text">${esc(t.text)}</div>
+    <div class="meta"><span class="tag">${c.e} ${c.label}</span>${t.urgent ? '<span class="tag hot">🔥 Urgent</span>' : ''}<span class="tag plain">${WHEN.find(w => w.id === t.when).label}</span></div>
+    <div class="focus-actions">
+      <button class="btn" type="button" data-act="focus-done">I did it!</button>
+      <button class="btn ghost" type="button" data-act="one-thing">Give me a different one</button>
+      <button class="link-btn" type="button" data-act="focus-close">Not now</button>
+    </div></section>`;
+}
+
+/* To-do */
+function viewTasks() {
+  const b = BLOCKS[1];
+  const all = S.tasks.items;
+  const open = all.filter(t => !t.done);
+  const countFor = f => open.filter(t => inWhen(t, f)).length;
+  let list = open.filter(t => inWhen(t, UI.taskWhen));
+  if (UI.taskUrg === 'urgent') list = list.filter(t => t.urgent);
+  if (UI.taskUrg === 'chill') list = list.filter(t => !t.urgent);
+  list.sort((a, b) => (b.urgent - a.urgent) || (whenRank[a.when] - whenRank[b.when]));
+  const done = all.filter(t => t.done).sort((a, b) => String(b.doneAt).localeCompare(String(a.doneAt)));
+  const detected = UI.addCatTouched ? UI.addCat : (UI.addCat || 'other');
+
+  let groups = [];
+  if (UI.taskGroup === 'type') groups = TASK_CATS.map(c => ({ key: c.id, title: `${c.e} ${c.label}`, items: list.filter(t => t.cat === c.id) }));
+  else if (UI.taskGroup === 'urgency') groups = [{ key: 'u', title: '🔥 Urgent', items: list.filter(t => t.urgent) }, { key: 'n', title: '🌿 Not urgent', items: list.filter(t => !t.urgent) }];
+  else groups = WHEN.map(w => ({ key: w.id, title: w.label, items: list.filter(t => t.when === w.id) }));
+  groups = groups.filter(g => g.items.length);
+
+  const row = t => {
+    const c = byId(TASK_CATS, t.cat);
+    const carried = !t.done && t.when === 'today' && t.addedOn && t.addedOn < today();
+    return `<li class="item ${t.urgent && !t.done ? 'urgent' : ''} ${t.done ? 'done' : ''}">
+      ${checkBtn('tasks', t.id, t.done, 'Done: ' + t.text)}
+      <button class="item-main" type="button" data-act="edit" data-k="tasks" data-id="${t.id}">
+        <span class="item-text">${esc(t.text)}</span>
+        <span class="meta">${UI.taskGroup !== 'type' ? `<span class="tag">${c.e} ${c.label}</span>` : ''}${t.urgent ? '<span class="tag hot">🔥 Urgent</span>' : ''}${UI.taskGroup !== 'when' ? `<span class="tag plain">${WHEN.find(w => w.id === t.when).label}</span>` : ''}${carried ? '<span class="tag warn">Carried over, still OK</span>' : ''}${t.ex ? '<span class="tag plain">Example</span>' : ''}</span>
+      </button>${moreBtn('tasks', t.id)}</li>`;
+  };
+  return `
+  ${head(b, 'To-do list', 'Brain dump it here. It gets sorted by type for you.')}
+  ${exBanner()}
+  <form class="addbar" data-form="tasks" autocomplete="off">
+    <div class="add-row"><input type="text" id="taskInput" placeholder="e.g. Book vet appointment" aria-label="New task" maxlength="200"><button class="btn" type="submit">Add</button></div>
+    <div class="add-opts">
+      ${segHtml('addWhen', WHEN, UI.addWhen)}
+      <button class="toggle" type="button" data-act="add-urgent" aria-pressed="${UI.addUrgent}">🔥 Urgent</button>
+      <select class="chip-select" id="taskCat" aria-label="Task type">${optHtml(TASK_CATS, detected)}</select>
+    </div>
+    <div class="hint">The type is picked for you as you type. Tap it to change.</div>
+  </form>
+  ${UI.focus ? focusCard() : `<button class="one-thing-btn" type="button" data-act="one-thing">🎯 Just tell me one thing to do</button>`}
+  <div class="controls">
+    <div class="chips" role="group" aria-label="When">
+      ${[...WHEN, { id: 'all', label: 'Everything' }].map(w => `<button class="chip" type="button" data-set="taskWhen" data-v="${w.id}" aria-pressed="${UI.taskWhen === w.id}">${w.label} <span class="n">${countFor(w.id)}</span></button>`).join('')}
+    </div>
+    <div class="controls-row">
+      <div class="chips" role="group" aria-label="Urgency">
+        <button class="chip" type="button" data-set="taskUrg" data-v="all" aria-pressed="${UI.taskUrg === 'all'}">All</button>
+        <button class="chip hot" type="button" data-set="taskUrg" data-v="urgent" aria-pressed="${UI.taskUrg === 'urgent'}">🔥 Urgent</button>
+        <button class="chip" type="button" data-set="taskUrg" data-v="chill" aria-pressed="${UI.taskUrg === 'chill'}">🌿 Not urgent</button>
+      </div>
+      <label class="hint" style="display:flex;align-items:center;gap:8px">Group by
+        <select class="chip-select" id="taskGroup" data-set-select="taskGroup">
+          <option value="type" ${UI.taskGroup === 'type' ? 'selected' : ''}>Type</option>
+          <option value="urgency" ${UI.taskGroup === 'urgency' ? 'selected' : ''}>Urgency</option>
+          <option value="when" ${UI.taskGroup === 'when' ? 'selected' : ''}>When</option>
+        </select></label>
+    </div>
+    ${UI.taskWhen === 'week' || UI.taskWhen === 'month' ? `<div class="hint">${UI.taskWhen === 'week' ? 'This week includes today' : 'This month includes today and this week'}.</div>` : ''}
+  </div>
+  ${groups.length ? groups.map(g => `<section class="group"><div class="group-head">${g.title} <span class="count">${g.items.length}</span></div><ul class="list">${g.items.map(row).join('')}</ul></section>`).join('')
+    : emptyBox('🌤️', open.length ? 'Nothing here with these filters. Try "Everything".' : 'All clear! Add something above when it pops into your head.')}
+  ${done.length ? `<details class="done-box"><summary><span><span class="caret">▸</span> Done (${done.length})</span><button class="link-btn" type="button" data-act="clear-done" data-k="tasks">Clear done</button></summary><ul class="list">${done.map(row).join('')}</ul></details>` : ''}`;
+}
+
+/* Groceries */
+function viewGrocery() {
+  const b = BLOCKS[2];
+  const items = S.grocery.items;
+  const matchStore = i => UI.groStore === 'all' || i.store === UI.groStore || i.store === 'Any store';
+  const need = items.filter(i => !i.got && matchStore(i));
+  const got = items.filter(i => i.got);
+  const usedStores = STORES.filter(s => s !== 'Any store' && items.some(i => i.store === s));
+  const storeChips = ['all', ...new Set(['Safeway', 'No Frills', ...usedStores])];
+  const row = i => {
+    const a = byId(AISLES, i.aisle);
+    return `<li class="item ${i.got ? 'done' : ''}">${checkBtn('grocery', i.id, i.got, 'Got it: ' + i.text)}
+      <button class="item-main" type="button" data-act="edit" data-k="grocery" data-id="${i.id}">
+        <span class="item-text">${esc(i.text)}${i.qty ? ` <span class="tag plain">× ${esc(i.qty)}</span>` : ''}</span>
+        <span class="meta">${i.got ? `<span class="tag">${a.e} ${a.label}</span>` : ''}${i.store && i.store !== 'Any store' ? `<span class="tag plain">📍 ${esc(i.store)}</span>` : ''}${i.ex ? '<span class="tag plain">Example</span>' : ''}</span>
+      </button>${moreBtn('grocery', i.id)}</li>`;
+  };
+  const groups = AISLES.map(a => ({ a, items: need.filter(i => i.aisle === a.id) })).filter(g => g.items.length);
+  const detected = UI.addAisleTouched ? UI.addAisle : (UI.addAisle || 'other');
+  return `
+  ${head(b, 'Grocery list', 'Sorted by aisle automatically, so you can grab and go.')}
+  ${exBanner()}
+  <form class="addbar" data-form="grocery" autocomplete="off">
+    <div class="add-row"><input type="text" id="groInput" placeholder="e.g. milk, eggs, bananas" aria-label="New grocery items" maxlength="300"><button class="btn" type="submit">Add</button></div>
+    <div class="add-opts">
+      <select class="chip-select" id="groAisle" aria-label="Aisle">${optHtml(AISLES, detected)}</select>
+      <select class="chip-select" id="groStore" aria-label="Store">${STORES.map(s => `<option ${s === UI.addStore ? 'selected' : ''}>${s}</option>`).join('')}</select>
+    </div>
+    <div class="hint">Add a few at once with commas. Each one finds its own aisle.</div>
+  </form>
+  <div class="chips" role="group" aria-label="Store">
+    ${storeChips.map(s => `<button class="chip" type="button" data-set="groStore" data-v="${esc(s)}" aria-pressed="${UI.groStore === s}">${s === 'all' ? 'All stores' : '📍 ' + esc(s)} <span class="n">${items.filter(i => !i.got && (s === 'all' || i.store === s || i.store === 'Any store')).length}</span></button>`).join('')}
+  </div>
+  ${groups.length ? groups.map(g => `<section class="group"><div class="group-head">${g.a.e} ${g.a.label} <span class="count">${g.items.length}</span></div><ul class="list">${g.items.map(row).join('')}</ul></section>`).join('')
+    : emptyBox('🧺', items.length ? 'Everything is in the cart. Nice shopping!' : 'Your list is empty. Add what you need above.')}
+  ${got.length ? `<details class="done-box" open><summary><span><span class="caret">▸</span> In the cart (${got.length})</span><button class="link-btn" type="button" data-act="clear-done" data-k="grocery">Clear cart</button></summary><ul class="list">${got.map(row).join('')}</ul></details>` : ''}`;
+}
+
+/* Clean */
+function viewClean() {
+  const b = BLOCKS[3];
+  const items = S.clean.items;
+  const fresh = items.filter(cleanDone).length;
+  const pct = items.length ? Math.round(fresh / items.length * 100) : 0;
+  const detected = UI.addRoomTouched ? UI.addRoom : (UI.addRoom || 'whole');
+  const rooms = ROOMS.map(r => ({ r, items: items.filter(c => c.room === r.id) })).filter(g => g.items.length);
+  const row = c => {
+    const d = cleanDone(c);
+    const f = FREQS.find(x => x.id === c.freq) || FREQS[1];
+    return `<li class="item ${d ? 'done' : ''}">${checkBtn('clean', c.id, d, 'Done: ' + c.text)}
+      <button class="item-main" type="button" data-act="edit" data-k="clean" data-id="${c.id}">
+        <span class="item-text">${esc(c.text)}</span>
+        <span class="meta"><span class="tag plain">${f.label}</span><span class="tag ${d ? 'ok' : (c.doneAt ? 'warn' : 'plain')}">${d ? 'Done ' + ago(c.doneAt).toLowerCase() : c.doneAt ? 'Last: ' + ago(c.doneAt).toLowerCase() : 'Not done yet'}</span>${c.ex ? '<span class="tag plain">Example</span>' : ''}</span>
+      </button>${moreBtn('clean', c.id)}</li>`;
+  };
+  return `
+  ${head(b, 'Clean house', 'Chores by room. Daily, weekly and monthly ones come back on their own.')}
+  ${exBanner()}
+  <div class="progress-card"><div class="row"><span>Home freshness</span><span class="pct">${pct}%</span></div><div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><div class="hint">${fresh} of ${items.length} chores are done for now. Even one counts.</div></div>
+  <form class="addbar" data-form="clean" autocomplete="off">
+    <div class="add-row"><input type="text" id="cleanInput" placeholder="e.g. Clean the toilet" aria-label="New chore" maxlength="200"><button class="btn" type="submit">Add</button></div>
+    <div class="add-opts">
+      <select class="chip-select" id="cleanRoom" aria-label="Room">${optHtml(ROOMS, detected)}</select>
+      ${segHtml('addFreq', FREQS, UI.addFreq)}
+    </div>
+  </form>
+  ${rooms.length ? `<section class="rooms">${rooms.map(g => {
+    const f = g.items.filter(cleanDone).length; const p = Math.round(f / g.items.length * 100);
+    return `<article class="room"><div class="room-head"><h3><span aria-hidden="true">${g.r.e}</span> ${g.r.label}</h3><span class="hint">${f}/${g.items.length}</span></div><div class="bar"><i style="width:${p}%"></i></div><ul class="list">${g.items.map(row).join('')}</ul></article>`;
+  }).join('')}</section>` : emptyBox('🧽', 'No chores yet. Add one above and pick a room.')}`;
+}
+
+/* Money */
+function viewMoney() {
+  const b = BLOCKS[4];
+  const m = UI.month;
+  const entries = monthEntries(m).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const inc = entries.filter(e => e.dir === 'in').reduce((a, e) => a + (+e.amount || 0), 0);
+  const out = entries.filter(e => e.dir === 'out').reduce((a, e) => a + (+e.amount || 0), 0);
+  const net = inc - out;
+  const mDate = parseYmd(m + '-01');
+  const mLabel = mDate.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' });
+  const byCat = MONEY_CATS.map(c => ({ c, v: entries.filter(e => e.dir === 'out' && e.cat === c.id).reduce((a, e) => a + (+e.amount || 0), 0) })).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+  const maxV = byCat.length ? byCat[0].v : 1;
+  const days = [...new Set(entries.map(e => e.date))];
+  const detected = UI.mCatTouched ? UI.mCat : (UI.mCat || (UI.mDir === 'in' ? 'income' : 'other'));
+  const row = e => {
+    const c = byId(MONEY_CATS, e.cat);
+    return `<li class="item"><span class="care-emoji" style="width:40px;height:40px;font-size:1.2rem;background:var(--money-soft)" aria-hidden="true">${c.e}</span>
+      <button class="item-main" type="button" data-act="edit" data-k="money" data-id="${e.id}"><span class="item-text">${esc(e.desc)}</span><span class="meta"><span class="tag">${c.label}</span>${e.ex ? '<span class="tag plain">Example</span>' : ''}</span></button>
+      <span class="amt ${e.dir}">${e.dir === 'in' ? '+' : '−'}${money(e.amount)}</span>${moreBtn('money', e.id)}</li>`;
+  };
+  return `
+  ${head(b, 'Money', 'Every in and out, in one calm place.', `<div class="month-nav"><button type="button" data-act="month" data-d="-1" aria-label="Previous month">‹</button><span>${mLabel}</span><button type="button" data-act="month" data-d="1" aria-label="Next month">›</button></div>`)}
+  ${exBanner()}
+  <div class="money-top">
+    <div class="stat hero"><span class="lbl">Account balance</span><span class="val">${money(balance())}</span><button class="link-btn" style="align-self:flex-start;padding-left:0" type="button" data-act="edit-start">Starting balance: ${money(S.money.start)} · change</button></div>
+    <div class="stat"><span class="lbl">In</span><span class="val pos">${money(inc)}</span></div>
+    <div class="stat"><span class="lbl">Out</span><span class="val">${money(out)}</span></div>
+    <div class="stat"><span class="lbl">Left over</span><span class="val ${net >= 0 ? 'pos' : 'neg'}">${money(net, true)}</span></div>
+  </div>
+  <form class="addbar b-money" data-form="money" autocomplete="off">
+    <div class="money-add">
+      <input type="text" id="mDesc" placeholder="What was it? e.g. No Frills" aria-label="Description" maxlength="120">
+      <input type="number" id="mAmt" placeholder="$ 0.00" aria-label="Amount" inputmode="decimal" step="0.01" min="0">
+    </div>
+    <div class="add-opts">
+      ${segHtml('mDir', [{ id: 'out', label: '− Money out' }, { id: 'in', label: '+ Money in' }], UI.mDir)}
+      <select class="chip-select" id="mCat" aria-label="Category">${optHtml(MONEY_CATS, detected)}</select>
+      <input type="date" id="mDate" class="chip-select" style="background-image:none;padding-right:12px" value="${m === today().slice(0, 7) ? today() : m + '-01'}" aria-label="Date">
+      <button class="btn" type="submit" style="margin-left:auto">Add</button>
+    </div>
+  </form>
+  <div class="money-grid">
+    <section class="panel"><h3>${mLabel}</h3>
+      ${entries.length ? days.map(d => `<div class="day-label">${parseYmd(d).toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' })}</div><ul class="list">${entries.filter(e => e.date === d).map(row).join('')}</ul>`).join('') : emptyBox('🪙', 'Nothing logged this month yet.')}
+    </section>
+    <section class="panel"><h3>Where it went</h3>
+      ${byCat.length ? `<div class="cat-bars">${byCat.map(x => `<div class="cat-bar" title="${x.c.label}: ${money(x.v)} (${Math.round(x.v / out * 100)}% of spending)"><div class="row"><span>${x.c.e} ${x.c.label}</span><span class="v">${money(x.v)} · ${Math.round(x.v / out * 100)}%</span></div><div class="track"><i style="width:${Math.max(2, x.v / maxV * 100)}%"></i></div></div>`).join('')}</div>` : '<p class="hint">Spending by category shows up here once you log a purchase.</p>'}
+    </section>
+  </div>`;
+}
+
+/* Care */
+function viewCare() {
+  const b = BLOCKS[5];
+  const items = S.care.items.slice().sort((a, b) => { const o = { due: 0, soon: 1, fresh: 2 }; return o[careStatus(a).id] - o[careStatus(b).id]; });
+  const ideas = CARE_IDEAS.filter(i => !S.care.items.some(c => c.text.toLowerCase() === i.text.toLowerCase()));
+  const week = [...Array(7)].map((_, i) => addDays(today(), i - 6));
+  const card = c => {
+    const st = careStatus(c);
+    const ev = CARE_EVERY.find(x => x.v === Number(c.every));
+    const log = new Set(c.log || []);
+    return `<article class="care-card">
+      <div class="care-top"><span class="care-emoji" aria-hidden="true">${careEmoji(c)}</span><span class="status ${st.id}">${st.label}</span></div>
+      <h3>${esc(c.text)}</h3>
+      <div class="when">Last time: ${ago(careLast(c))}<br>Goal: ${ev ? ev.label.toLowerCase() : `every ${c.every} days`}${c.ex ? ' · <em>example</em>' : ''}</div>
+      <div class="dots" aria-label="Last 7 days">${week.map(d => `<i class="${log.has(d) ? 'on' : ''}" title="${parseYmd(d).toLocaleDateString('en-CA', { weekday: 'short' })}"></i>`).join('')}<span class="dl">7 days</span></div>
+      <div style="display:flex;gap:8px;align-items:center" class="did-btn">
+        ${careLast(c) === today() ? `<button class="btn soft" type="button" data-act="care-undo" data-id="${c.id}" style="flex:1">💖 Done today · undo</button>` : `<button class="btn" type="button" data-act="care-did" data-id="${c.id}" style="flex:1">I did it!</button>`}
+        ${moreBtn('care', c.id)}
+      </div></article>`;
+  };
+  return `
+  ${head(b, 'Self-care', 'Gentle reminders to look after you. No guilt, just nudges.')}
+  ${exBanner()}
+  ${items.length ? `<section class="care-grid">${items.map(card).join('')}</section>` : emptyBox('🌷', 'Add a few kind things below.')}
+  <form class="addbar" data-form="care" autocomplete="off">
+    <div class="add-row"><input type="text" id="careInput" placeholder="e.g. Paint my nails" aria-label="New self-care habit" maxlength="120"><button class="btn" type="submit">Add</button></div>
+    <div class="add-opts">
+      <select class="chip-select" id="careKind" aria-label="Kind">${optHtml(CARE_KINDS, UI.careKind)}</select>
+      <select class="chip-select" id="careEvery" aria-label="How often">${CARE_EVERY.map(e => `<option value="${e.v}" ${e.v === UI.careEvery ? 'selected' : ''}>${e.label}</option>`).join('')}</select>
+    </div>
+    ${ideas.length ? `<div class="hint">Or tap an idea:</div><div class="chips">${ideas.map(i => `<button class="chip" type="button" data-act="care-idea" data-t="${esc(i.text)}">${i.e} ${esc(i.text)}</button>`).join('')}</div>` : ''}
+  </form>`;
+}
+
+/* ---------- sheet (edit + menu) ---------- */
+const sheetWrap = $('#sheetWrap'), sheet = $('#sheet');
+let sheetCtx = null;
+function openSheet(html, ctx, cls = '') {
+  sheetCtx = ctx;
+  sheet.className = 'sheet ' + cls;
+  sheet.innerHTML = '<div class="sheet-grab"></div>' + html;
+  sheetWrap.hidden = false;
+  const f = sheet.querySelector('input,select,button:not(.sheet-grab)');
+  if (f) setTimeout(() => f.focus(), 30);
+}
+function closeSheet() { sheetWrap.hidden = true; sheet.innerHTML = ''; sheetCtx = null; }
+const field = (label, id, inner) => `<div class="field"><label for="${id}">${label}</label>${inner}</div>`;
+const selectField = (label, id, list, cur) => field(label, id, `<select id="${id}">${optHtml(list, cur)}</select>`);
+
+function openEdit(k, id) {
+  const item = listOf(k).find(x => x.id === id);
+  if (!item) return;
+  let f = '';
+  if (k === 'tasks') f = field('Task', 'e_text', `<input id="e_text" value="${esc(item.text)}" maxlength="200">`) + selectField('Type', 'e_cat', TASK_CATS, item.cat)
+    + field('When', 'e_when', `<select id="e_when">${WHEN.map(w => `<option value="${w.id}" ${w.id === item.when ? 'selected' : ''}>${w.label}</option>`).join('')}</select>`)
+    + field('Urgency', 'e_urgent', `<select id="e_urgent"><option value="1" ${item.urgent ? 'selected' : ''}>🔥 Urgent</option><option value="0" ${!item.urgent ? 'selected' : ''}>🌿 Not urgent</option></select>`);
+  if (k === 'grocery') f = field('Item', 'e_text', `<input id="e_text" value="${esc(item.text)}" maxlength="120">`) + field('How many', 'e_qty', `<input id="e_qty" value="${esc(item.qty || '')}" placeholder="optional" maxlength="30">`)
+    + selectField('Aisle', 'e_aisle', AISLES, item.aisle) + field('Store', 'e_store', `<select id="e_store">${STORES.map(s => `<option ${s === item.store ? 'selected' : ''}>${s}</option>`).join('')}</select>`);
+  if (k === 'clean') f = field('Chore', 'e_text', `<input id="e_text" value="${esc(item.text)}" maxlength="200">`) + selectField('Room', 'e_room', ROOMS, item.room)
+    + field('How often', 'e_freq', `<select id="e_freq">${FREQS.map(x => `<option value="${x.id}" ${x.id === item.freq ? 'selected' : ''}>${x.label}</option>`).join('')}</select>`);
+  if (k === 'money') f = field('Description', 'e_text', `<input id="e_text" value="${esc(item.desc)}" maxlength="120">`) + field('Amount', 'e_amt', `<input id="e_amt" type="number" step="0.01" min="0" inputmode="decimal" value="${esc(item.amount)}">`)
+    + field('In or out', 'e_dir', `<select id="e_dir"><option value="out" ${item.dir === 'out' ? 'selected' : ''}>− Money out</option><option value="in" ${item.dir === 'in' ? 'selected' : ''}>+ Money in</option></select>`)
+    + selectField('Category', 'e_cat', MONEY_CATS, item.cat) + field('Date', 'e_date', `<input id="e_date" type="date" value="${esc(item.date)}">`);
+  if (k === 'care') f = field('Self-care thing', 'e_text', `<input id="e_text" value="${esc(item.text)}" maxlength="120">`) + selectField('Kind', 'e_kind', CARE_KINDS, item.kind)
+    + field('How often', 'e_every', `<select id="e_every">${CARE_EVERY.map(e => `<option value="${e.v}" ${e.v === Number(item.every) ? 'selected' : ''}>${e.label}</option>`).join('')}</select>`);
+  openSheet(`<h2 id="sheetTitle">Edit</h2><form id="editForm" style="display:flex;flex-direction:column;gap:14px">${f}
+    <div class="sheet-actions"><button class="btn danger" type="button" data-act="sheet-delete">Delete</button><div class="right"><button class="btn ghost" type="button" data-act="sheet-close">Cancel</button><button class="btn" type="submit">Save</button></div></div></form>`, { k, id }, 'b-' + k);
+}
+function saveEdit() {
+  const { k, id } = sheetCtx;
+  const item = listOf(k).find(x => x.id === id);
+  if (!item) return closeSheet();
+  const v = s => ($('#' + s, sheet) || {}).value;
+  const text = (v('e_text') || '').trim();
+  if (!text) { $('#e_text', sheet).focus(); return; }
+  if (k === 'money') { item.desc = text; item.amount = Math.abs(parseFloat(v('e_amt')) || 0); item.dir = v('e_dir'); item.cat = v('e_cat'); item.date = v('e_date') || today(); }
+  else item.text = text;
+  if (k === 'tasks') { item.cat = v('e_cat'); item.when = v('e_when'); item.urgent = v('e_urgent') === '1'; }
+  if (k === 'grocery') { item.qty = (v('e_qty') || '').trim(); item.aisle = v('e_aisle'); item.store = v('e_store'); }
+  if (k === 'clean') { item.room = v('e_room'); item.freq = v('e_freq'); }
+  if (k === 'care') { item.kind = v('e_kind'); item.every = Number(v('e_every')) || 7; if (item.e && !CARE_IDEAS.some(i => i.text === item.text)) delete item.e; }
+  delete item.ex;
+  save(k); closeSheet(); render(); toast('Saved');
+}
+let lastDeleted = null;
+function deleteItem(k, id) {
+  const list = listOf(k);
+  const i = list.findIndex(x => x.id === id);
+  if (i < 0) return;
+  const [item] = list.splice(i, 1);
+  lastDeleted = { k, item, i };
+  save(k); render();
+  toast('Deleted', 'Undo', () => { if (!lastDeleted) return; listOf(lastDeleted.k).splice(lastDeleted.i, 0, lastDeleted.item); save(lastDeleted.k); lastDeleted = null; render(); });
+}
+
+function openMenu() {
+  openSheet(`<h2 id="sheetTitle">Backup & settings</h2>
+    <p>${R.refs.tasks ? 'Your lists are saved to your Claude account and sync to every device you open this on.' : 'Your lists are saved in this browser. Make a backup now and then so nothing gets lost.'}</p>
+    <div class="menu-list">
+      <button class="btn ghost" type="button" data-act="export">⬇️ Download a backup file</button>
+      <label class="btn ghost" for="importFile" style="cursor:pointer">⬆️ Restore from a backup file</label>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      ${hasExamples() ? '<button class="btn ghost" type="button" data-act="clear-examples">🧹 Clear the example items</button>' : ''}
+      <button class="btn danger" type="button" data-act="wipe-ask">🗑️ Erase everything</button>
+      <div id="wipeConfirm"></div>
+    </div>
+    <div class="sheet-actions"><span></span><button class="btn ghost" type="button" data-act="sheet-close">Close</button></div>`, { menu: true });
+}
+async function exportData() {
+  const data = JSON.stringify({ app: 'brain-blocks', version: 1, exported: new Date().toISOString(), ...Object.fromEntries(KEYS.map(k => [k, S[k]])) }, null, 2);
+  const filename = `brain-blocks-backup-${today()}.json`;
+  try {
+    const dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null;
+    if (dl) { await dl.save({ filename, data }); toast('Backup saved'); return; }
+  } catch (e) { if (e && e.code === 'declined') return; }
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+    a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    toast('Backup saved');
+  } catch (e) { toast("Couldn't save the file here"); }
+}
+function importData(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!d || d.app !== 'brain-blocks') throw new Error('not ours');
+      KEYS.forEach(k => { if (d[k]) { S[k] = normalize(k, d[k]); save(k); } });
+      closeSheet(); render(); toast('Backup restored');
+    } catch (e) { toast("That file isn't a Brain Blocks backup"); }
+  };
+  r.readAsText(file);
+}
+
+/* ---------- toast + confetti ---------- */
+let toastTimer;
+function toast(msg, actionLabel, action) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span>${actionLabel ? `<button type="button">${esc(actionLabel)}</button>` : ''}`;
+  t.hidden = false;
+  if (actionLabel) t.querySelector('button').onclick = () => { action(); t.hidden = true; };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, actionLabel ? 6000 : 2200);
+}
+const CHEERS = ['Nice one! 🎉', 'Look at you go! ✨', 'One down! 💪', 'Your brain says thanks 🧠', 'Tiny win, big deal 🌟', 'Yesss! 🙌', 'Proud of you 💖'];
+const cheer = () => CHEERS[Math.floor(Math.random() * CHEERS.length)];
+function confetti(el) {
+  if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const r = el.getBoundingClientRect();
+  const colors = ['var(--tasks)', 'var(--grocery)', 'var(--clean)', 'var(--money)', 'var(--care)'];
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('span');
+    p.className = 'pop';
+    const ang = (Math.PI * 2 * i) / 12, dist = 30 + Math.random() * 30;
+    p.style.left = r.left + r.width / 2 - 5 + 'px'; p.style.top = r.top + r.height / 2 - 5 + 'px';
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty('--dx', Math.cos(ang) * dist + 'px'); p.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 750);
+  }
+}
+
+/* ---------- actions ---------- */
+function clearExamples() {
+  KEYS.forEach(k => {
+    const before = listOf(k).length;
+    if (k === 'money') { S.money.entries = S.money.entries.filter(e => !e.ex); if (S.money.entries.length !== before || S.money.start === 1200) { if (S.money.start === 1200 && !S.money.entries.length) S.money.start = 0; save(k); } }
+    else { S[k].items = S[k].items.filter(i => !i.ex); if (S[k].items.length !== before) save(k); }
+  });
+  UI.focus = null; render(); toast('Fresh start ✨');
+}
+function toggle(k, id, btn) {
+  const item = listOf(k).find(x => x.id === id);
+  if (!item) return;
+  let nowDone = false;
+  if (k === 'tasks') { item.done = !item.done; item.doneAt = item.done ? today() : null; nowDone = item.done; }
+  if (k === 'grocery') { item.got = !item.got; nowDone = item.got; }
+  if (k === 'clean') { const d = cleanDone(item); item.prevDoneAt = d ? item.prevDoneAt : item.doneAt; item.doneAt = d ? (item.prevDoneAt || null) : today(); if (d) delete item.prevDoneAt; nowDone = !d; }
+  if (nowDone) { confetti(btn); toast(k === 'grocery' ? 'In the cart 🛒' : cheer()); }
+  save(k); render();
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act],[data-set],[data-seg]');
+  if (!t) { if (e.target === sheetWrap) closeSheet(); return; }
+  if (t.dataset.set) {
+    UI[t.dataset.set] = t.dataset.v; render(); return;
+  }
+  if (t.dataset.seg) {
+    const n = t.dataset.seg; UI[n] = t.dataset.v;
+    t.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === t));
+    if (n === 'mDir' && !UI.mCatTouched) { UI.mCat = t.dataset.v === 'in' ? 'income' : detectMoney(($('#mDesc') || {}).value || ''); const sel = $('#mCat'); if (sel) sel.value = UI.mCat; }
+    return;
+  }
+  const a = t.dataset.act;
+  if (a === 'toggle') return toggle(t.dataset.k, t.dataset.id, t);
+  if (a === 'edit') return openEdit(t.dataset.k, t.dataset.id);
+  if (a === 'sheet-close') return closeSheet();
+  if (a === 'sheet-delete') { const { k, id } = sheetCtx; closeSheet(); return deleteItem(k, id); }
+  if (a === 'clear-examples') { closeSheet(); return clearExamples(); }
+  if (a === 'add-urgent') { UI.addUrgent = !UI.addUrgent; t.setAttribute('aria-pressed', UI.addUrgent); return; }
+  if (a === 'one-thing') { const id = pickOne(); if (!id) { toast('Nothing on your list. Enjoy the calm 🌤️'); return; } UI.focus = id; render(); return; }
+  if (a === 'focus-close') { UI.focus = null; render(); return; }
+  if (a === 'focus-done') { const it = S.tasks.items.find(x => x.id === UI.focus); if (it) { it.done = true; it.doneAt = today(); save('tasks'); } confetti(t); toast(cheer()); UI.focus = null; render(); return; }
+  if (a === 'clear-done') {
+    e.preventDefault(); const k = t.dataset.k;
+    if (k === 'tasks') S.tasks.items = S.tasks.items.filter(x => !x.done); else S.grocery.items = S.grocery.items.filter(x => !x.got);
+    save(k); render(); toast(k === 'tasks' ? 'Done list cleared' : 'Cart cleared'); return;
+  }
+  if (a === 'month') { const d = parseYmd(UI.month + '-01'); d.setMonth(d.getMonth() + Number(t.dataset.d)); UI.month = ymd(d).slice(0, 7); render(); return; }
+  if (a === 'edit-start') {
+    openSheet(`<h2 id="sheetTitle">Starting balance</h2><p>What was in your account before the first entry you logged here? Your balance is this plus everything in, minus everything out.</p>
+      <form id="startForm" style="display:flex;flex-direction:column;gap:14px">${field('Starting balance ($)', 's_amt', `<input id="s_amt" type="number" step="0.01" inputmode="decimal" value="${S.money.start}">`)}
+      <div class="sheet-actions"><span></span><div class="right"><button class="btn ghost" type="button" data-act="sheet-close">Cancel</button><button class="btn" type="submit">Save</button></div></div></form>`, { start: true }, 'b-money');
+    return;
+  }
+  if (a === 'care-did') { const c = S.care.items.find(x => x.id === t.dataset.id); if (c) { c.log = [...new Set([...(c.log || []), today()])].sort().slice(-90); delete c.ex; save('care'); confetti(t); toast(cheer()); render(); } return; }
+  if (a === 'care-undo') { const c = S.care.items.find(x => x.id === t.dataset.id); if (c) { c.log = (c.log || []).filter(d => d !== today()); save('care'); render(); } return; }
+  if (a === 'care-idea') { const i = CARE_IDEAS.find(x => x.text === t.dataset.t); if (i) { S.care.items.push({ id: uid(), text: i.text, kind: i.kind, every: i.every, e: i.e, log: [] }); save('care'); render(); toast('Added 💖'); } return; }
+  if (a === 'export') return exportData();
+  if (a === 'wipe-ask') { $('#wipeConfirm').innerHTML = `<div class="examples" style="border-color:var(--hot)"><span><strong>Erase every list?</strong> This can't be undone. Download a backup first if you might want it.</span><button class="btn small danger" type="button" data-act="wipe">Yes, erase all</button></div>`; return; }
+  if (a === 'wipe') { KEYS.forEach(k => { S[k] = BLANK[k](); save(k); }); UI.focus = null; closeSheet(); render(); toast('Everything erased'); return; }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheetWrap.hidden) closeSheet(); });
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'importFile' && t.files && t.files[0]) return importData(t.files[0]);
+  if (t.dataset.setSelect) { UI[t.dataset.setSelect] = t.value; render(); return; }
+  if (t.id === 'taskCat') { UI.addCat = t.value; UI.addCatTouched = true; }
+  if (t.id === 'groAisle') { UI.addAisle = t.value; UI.addAisleTouched = true; }
+  if (t.id === 'groStore') UI.addStore = t.value;
+  if (t.id === 'cleanRoom') { UI.addRoom = t.value; UI.addRoomTouched = true; }
+  if (t.id === 'mCat') { UI.mCat = t.value; UI.mCatTouched = true; }
+  if (t.id === 'careKind') UI.careKind = t.value;
+  if (t.id === 'careEvery') UI.careEvery = Number(t.value);
+});
+document.addEventListener('input', e => {
+  const t = e.target, v = t.value;
+  if (t.id === 'taskInput' && !UI.addCatTouched) { UI.addCat = detectTask(v); $('#taskCat').value = UI.addCat; }
+  if (t.id === 'groInput') {
+    if (!UI.addAisleTouched) { UI.addAisle = detectAisle(v.split(',')[0]); $('#groAisle').value = UI.addAisle; }
+    const st = detectStore(v); if (st) { UI.addStore = st; $('#groStore').value = st; }
+  }
+  if (t.id === 'cleanInput' && !UI.addRoomTouched) { UI.addRoom = detectRoom(v); $('#cleanRoom').value = UI.addRoom; }
+  if (t.id === 'mDesc' && !UI.mCatTouched) { const c = detectMoney(v); UI.mCat = c; $('#mCat').value = c; if (c === 'income' && UI.mDir !== 'in') { UI.mDir = 'in'; document.querySelectorAll('[data-seg="mDir"]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === 'in')); } }
+});
+
+document.addEventListener('submit', e => {
+  const f = e.target;
+  e.preventDefault();
+  if (f.id === 'editForm') return saveEdit();
+  if (f.id === 'startForm') { S.money.start = parseFloat($('#s_amt', sheet).value) || 0; save('money'); closeSheet(); render(); toast('Saved'); return; }
+  const k = f.dataset.form;
+  if (k === 'tasks') {
+    const text = $('#taskInput').value.trim(); if (!text) return $('#taskInput').focus();
+    S.tasks.items.unshift({ id: uid(), text, cat: UI.addCatTouched ? UI.addCat : detectTask(text), when: UI.addWhen, urgent: UI.addUrgent, done: false, addedOn: today() });
+    UI.addCat = null; UI.addCatTouched = false; UI.addUrgent = false;
+    if (UI.taskWhen !== 'all' && !inWhen({ when: UI.addWhen }, UI.taskWhen)) UI.taskWhen = UI.addWhen;
+    save('tasks'); render(); $('#taskInput').focus(); toast('Added ✨');
+  }
+  if (k === 'grocery') {
+    const parts = $('#groInput').value.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+    if (!parts.length) return $('#groInput').focus();
+    parts.forEach((p, idx) => {
+      const m = p.match(/^(\d+\s*[a-z]{0,3})\s+(.+)$/i) || p.match(/^(.+?)\s+x\s*(\d+)$/i);
+      let text = p, qty = '';
+      if (m) { if (/^\d/.test(m[1])) { qty = m[1].trim(); text = m[2]; } else { text = m[1]; qty = m[2]; } }
+      text = text.replace(/\b(at|from)\s+(safeway|no frills|costco)\b/i, '').trim() || text;
+      text = text.charAt(0).toUpperCase() + text.slice(1);
+      const aisle = idx === 0 && UI.addAisleTouched ? UI.addAisle : detectAisle(text);
+      S.grocery.items.push({ id: uid(), text, aisle, store: UI.addStore, qty, got: false });
+    });
+    UI.addAisle = null; UI.addAisleTouched = false;
+    save('grocery'); render(); $('#groInput').focus(); toast(parts.length > 1 ? `Added ${parts.length} items 🛒` : 'Added 🛒');
+  }
+  if (k === 'clean') {
+    const text = $('#cleanInput').value.trim(); if (!text) return $('#cleanInput').focus();
+    S.clean.items.push({ id: uid(), text, room: UI.addRoomTouched ? UI.addRoom : detectRoom(text), freq: UI.addFreq, doneAt: null });
+    UI.addRoom = null; UI.addRoomTouched = false;
+    save('clean'); render(); $('#cleanInput').focus(); toast('Added 🧽');
+  }
+  if (k === 'money') {
+    const desc = $('#mDesc').value.trim(); const amt = Math.abs(parseFloat($('#mAmt').value));
+    if (!desc) return $('#mDesc').focus();
+    if (!amt) return $('#mAmt').focus();
+    const date = $('#mDate').value || today();
+    S.money.entries.push({ id: uid(), date, desc, amount: Math.round(amt * 100) / 100, dir: UI.mDir, cat: UI.mCatTouched ? UI.mCat : (UI.mDir === 'in' && detectMoney(desc) === 'other' ? 'income' : detectMoney(desc)) });
+    UI.mCat = null; UI.mCatTouched = false; UI.month = date.slice(0, 7);
+    save('money'); render(); $('#mDesc').focus(); toast('Logged 💸');
+  }
+  if (k === 'care') {
+    const text = $('#careInput').value.trim(); if (!text) return $('#careInput').focus();
+    S.care.items.push({ id: uid(), text, kind: UI.careKind, every: UI.careEvery, log: [] });
+    save('care'); render(); $('#careInput').focus(); toast('Added 💖');
+  }
+});
+
+window.addEventListener('hashchange', () => { closeSheet(); render(); window.scrollTo(0, 0); });
+render();
+connect();
+})();
+</script>
+
+</body>
+</html>
